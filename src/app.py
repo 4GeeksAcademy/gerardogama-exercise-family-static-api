@@ -30,13 +30,45 @@ def handle_hello():
 
     # this is how you can use the Family datastructure by calling its methods
     members = jackson_family.get_all_members()
-    response_body = {
-        "hello": "world",
-        "family": members
-    }
-
-
+    response_body = members
     return jsonify(response_body), 200
+
+@app.route('/member/<int:id>', methods=['GET'])
+def get_member_for_id(id):
+    members = jackson_family.get_member(id)
+    print("El integrante de la familia es: ",members)
+    if members is None:
+         return jsonify({"msg":"no se encontro info"}),404
+    return jsonify(members), 200
+
+
+@app.route('/member/<int:id>', methods=['DELETE'])
+def delete_member_for_id(id):
+    members = jackson_family.delete_member(id)
+    print("El integrante de la familia es: ",members)
+    if members is None:  
+        return jsonify({"msg":"no se encontro info"}),404
+    return jsonify({"done":members}), 200
+
+
+
+@app.route("/member",methods=['POST'])
+def new_member():
+    body=request.get_json(silent=True)
+    if body is None:
+        return jsonify({"message":"El body no puede estar vacio"})
+    if "first_name" not in body:
+        return jsonify({"message":"El campo first_name es obligatorio"})
+    print(body)
+    new_member_data = {
+            "id": body.get("id",jackson_family._generateId()),
+            "first_name": body["first_name"],
+            "last_name": jackson_family.last_name,
+            "age": body["age"],
+            "lucky_numbers": body["lucky_numbers"]
+        }
+    return jsonify(jackson_family.add_member(new_member_data)),200
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
